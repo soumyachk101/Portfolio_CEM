@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform, useMotionTemplate } from "framer-motion";
+import { motion } from "framer-motion";
 import { ArrowRight, Github } from "lucide-react";
+import { useCinematicCardScroll, CINEMATIC_CARD_SCROLL_CLASS } from "../lib/useCinematicCardScroll";
 
 interface HackathonItem {
     code: string;
@@ -60,28 +60,16 @@ const hackathons: HackathonItem[] = [
 ];
 
 const HackathonCard = ({ hack, index }: { hack: HackathonItem; index: number }) => {
-    const container = useRef<HTMLDivElement>(null);
-    
-    const { scrollYProgress } = useScroll({
-        target: container,
-        offset: ['start end', 'end start']
-    });
-
-    const rotateX = useTransform(scrollYProgress, [0, 0.45, 0.5, 1], [45, 0, 0, -12]);
-    const opacity = useTransform(scrollYProgress, [0, 0.3, 0.5, 0.8], [0, 1, 1, 0.2]);
-    const scale = useTransform(scrollYProgress, [0, 0.45, 0.5, 1], [0.8, 1, 1, 0.85]);
-    const blurValue = useTransform(scrollYProgress, [0, 0.3, 0.5, 0.8], [12, 0, 0, 8]);
-    const filter = useMotionTemplate`blur(${blurValue}px)`;
+    const { containerRef, opacity, transform, filter } = useCinematicCardScroll();
 
     const topOffset = `calc(10vh + ${index * 30}px)`;
 
     return (
-        <div ref={container} className="h-[120vh] flex items-start justify-center sticky top-0 pb-[10vh]">
+        <div ref={containerRef} className={`${CINEMATIC_CARD_SCROLL_CLASS} flex items-start justify-center sticky top-0 pb-[10vh]`}>
             <motion.div
                 style={{ 
-                    scale,
                     opacity,
-                    rotateX,
+                    transform,
                     filter,
                     top: topOffset,
                     transformOrigin: "top center",
@@ -188,7 +176,7 @@ const Hackathons = () => {
                     </div>
 
                     {/* Right: Hackathon Cards Stack */}
-                    <div className="lg:col-span-9 relative" style={{ perspective: "1500px" }}>
+                    <div className="lg:col-span-9 relative" style={{ perspective: "1000px" }}>
                         <div className="relative mt-[-10vh]">
                             {hackathons.map((hack, index) => (
                                 <HackathonCard 

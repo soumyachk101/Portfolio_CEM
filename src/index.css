@@ -154,11 +154,54 @@
   to { transform: translateY(100%); }
 }
 
+/* Experience — cinematic film frame */
+.film-frame {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 40%, transparent 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+    0 24px 80px rgba(0, 0, 0, 0.55),
+    0 0 120px rgba(255, 255, 255, 0.02);
+}
+
+.film-perforations {
+  opacity: 0.55;
+}
+
+.experience-scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.012) 2px,
+    rgba(255, 255, 255, 0.012) 4px
+  );
+  opacity: 0.6;
+}
+
+.experience-vignette {
+  background: radial-gradient(ellipse 75% 65% at 50% 50%, transparent 35%, rgba(0, 0, 0, 0.85) 100%);
+}
+
+.rec-dot {
+  animation: rec-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes rec-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.85); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .rec-dot {
+    animation: none;
+    opacity: 0.7;
   }
 }
