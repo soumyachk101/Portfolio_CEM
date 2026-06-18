@@ -7,31 +7,25 @@ export default {
     theme: {
         extend: {
             colors: {
-                background: "#fdfbf7",
-                foreground: "#2d2d2d",
-                muted: "#e5e0d8",
-                accent: "#dd2c38",
-                secondary: "#2d5da1",
-                border: "#2d2d2d",
-                paper: "#fdfbf7",
-                pencil: "#2d2d2d",
-                "post-it": "#fff9c4"
+                // Cinematic — Apple Event Style (Pure B&W)
+                background: "#000000",
+                foreground: "#ffffff",
+                muted: "#666666",
+                subtle: "#333333",
+                border: "rgba(255,255,255,0.08)",
+                "border-strong": "rgba(255,255,255,0.15)",
+                surface: "rgba(255,255,255,0.04)",
+                "surface-hover": "rgba(255,255,255,0.08)",
             },
             fontFamily: {
-                sans: ['var(--font-patrick-hand)', 'Patrick Hand', 'cursive'],
-                heading: ['var(--font-kalam)', 'Kalam', 'cursive'],
+                sans: ['var(--font-inter)', 'Inter', 'sans-serif'],
+                heading: ['var(--font-heading)', 'Share Tech Mono', 'monospace'],
+                mono: ['var(--font-mono)', 'Space Mono', 'ui-monospace', 'monospace'],
             },
-            boxShadow: {
-                'hard': '4px 4px 0px 0px #2d2d2d',
-                'hard-lg': '8px 8px 0px 0px #2d2d2d',
-                'hard-sm': '2px 2px 0px 0px #2d2d2d',
-                'hard-hover': '2px 2px 0px 0px #2d2d2d',
+            transitionTimingFunction: {
+                'out-emil': 'cubic-bezier(0.23, 1, 0.32, 1)',
+                'in-out-emil': 'cubic-bezier(0.77, 0, 0.175, 1)',
             },
-            borderRadius: {
-                'wobbly': '255px 15px 225px 15px / 15px 225px 15px 255px',
-                'wobbly-md': '15px 255px 15px 225px / 255px 15px 225px 15px',
-                'wobbly-sm': '225px 15px 255px 15px / 15px 255px 15px 225px',
-            }
         },
     },
     plugins: [],

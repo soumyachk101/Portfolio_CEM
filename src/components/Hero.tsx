@@ -1,224 +1,164 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { motion } from "framer-motion";
-import { ArrowDown } from "lucide-react";
-import { Button } from "./ui/Button";
+import { useEffect, useRef } from 'react';
+import { motion, useSpring, useMotionValue, useScroll, useTransform, type Variants } from "framer-motion";
+
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+// Word-by-word reveal variant — staggered clip-path
+const container: Variants = {
+    hidden: {},
+    show: {
+        transition: { staggerChildren: 0.12, delayChildren: 0.2 },
+    },
+};
+
+const wordVariant: Variants = {
+    hidden: { y: '110%', opacity: 0 },
+    show: {
+        y: '0%',
+        opacity: 1,
+        transition: { duration: 1.0, ease: EASE },
+    },
+};
+
+const lineVariant: Variants = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { duration: 0.8, ease: EASE } },
+};
 
 const Hero = () => {
+    // Magnetic orb following cursor — warm white glow
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+    const springX = useSpring(mouseX, { stiffness: 100, damping: 20 });
+    const springY = useSpring(mouseY, { stiffness: 100, damping: 20 });
+
+    // Scroll-driven parallax — hero drifts up & fades as you scroll
     const heroRef = useRef<HTMLDivElement>(null);
-    // Defer the drag/hover framer-motion mount so the first paint ships plain
-    // HTML for the letters and toys. This drops the 100+ ms long main-thread
-    // task that framer-motion drag subscribers cause at first paint.
-    const [interactive, setInteractive] = useState(false);
+    const { scrollYProgress } = useScroll({
+        target: heroRef,
+        offset: ['start start', 'end start']
+    });
+    const heroOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+    const heroScale = useTransform(scrollYProgress, [0, 0.7], [1, 0.92]);
+    const heroY = useTransform(scrollYProgress, [0, 0.7], [0, -120]);
+    const bgY = useTransform(scrollYProgress, [0, 1], [0, 200]);
 
     useEffect(() => {
-        const ric = (cb: () => void) =>
-            (window as any).requestIdleCallback
-                ? (window as any).requestIdleCallback(cb, { timeout: 250 })
-                : setTimeout(cb, 50);
-        const id = ric(() => setInteractive(true));
-        return () => {
-            if ((window as any).cancelIdleCallback) (window as any).cancelIdleCallback(id);
-            else clearTimeout(id);
-        };
-    }, []);
-
-    const firstName = Array.from("Soumya");
-    const lastName = Array.from("Chakraborty");
-
-    // Draggable letter hover/spring variants
-    const letterVariants = {
-        hover: {
-            scale: 1.2,
-            rotate: [0, -5, 5, 0],
-            color: "#e85d04",
-            transition: { duration: 0.3 }
-        },
-        tap: {
-            scale: 0.95
+        if (window.matchMedia("(pointer: fine)").matches) {
+            const handleMouseMove = (e: MouseEvent) => {
+                mouseX.set(e.clientX - 300);
+                mouseY.set(e.clientY - 300);
+            };
+            window.addEventListener("mousemove", handleMouseMove);
+            return () => window.removeEventListener("mousemove", handleMouseMove);
         }
-    };
+    }, [mouseX, mouseY]);
 
-    // Plain (non-framer) wrappers used until `interactive` flips, so the
-    // initial paint is composited text without framer's per-element
-    // MotionValue / PanInfo overhead.
-    const LetterShell = ({ char, color }: { char: string; color?: string }) => (
-        <span
-            className="inline-block cursor-grab select-none"
-            style={color ? { color } : undefined}
-        >
-            {char}
-        </span>
-    );
+    const headlineWords1 = ["SOUMYA"];
+    const headlineWords2 = ["PORTFOLIO"];
 
     return (
         <section
             id="home"
             ref={heroRef}
-            className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-background pt-20 select-none"
+            className="relative min-h-screen w-full flex items-center overflow-hidden bg-black"
         >
-            {/* Hand-drawn Decorative Elements */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none" aria-hidden="true">
-                <svg className="absolute top-20 right-10 w-32 h-32 text-muted hidden md:block" viewBox="0 0 100 100" fill="none">
-                    <path d="M10,50 Q50,10 90,50 T50,90 T10,50" stroke="currentColor" strokeWidth="2" strokeDasharray="5,5" />
-                </svg>
-                <div className="absolute bottom-20 left-20 w-16 h-16 border-4 border-accent border-wobbly rounded-full opacity-50 pulse-opacity hidden md:block"></div>
-            </div>
+            {/* Large magnetic spotlight — drifts with cursor */}
+            <motion.div 
+                className="hidden md:block absolute pointer-events-none z-0 w-[600px] h-[600px] rounded-full blur-[200px]"
+                style={{
+                    x: springX,
+                    y: springY,
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.08), transparent 65%)',
+                }}
+            />
 
-            {/* Draggable Background Toys */}
-            {interactive ? (
-                <>
-                    <motion.div
-                        drag
-                        dragConstraints={heroRef}
-                        dragElastic={0.25}
-                        whileDrag={{ scale: 1.3, rotate: 20 }}
-                        className="absolute cursor-grab active:cursor-grabbing text-3xl p-3 bg-[#fff9c4] border-2 border-pencil border-wobbly rounded-full shadow-hard-sm hidden md:block z-20"
-                        style={{ top: "22%", left: "8%", rotate: "-12deg" }}
-                        title="Toss me!"
-                    >
-                        ✏️
-                    </motion.div>
-
-                    <motion.div
-                        drag
-                        dragConstraints={heroRef}
-                        dragElastic={0.25}
-                        whileDrag={{ scale: 1.3, rotate: -25 }}
-                        className="absolute cursor-grab active:cursor-grabbing text-3xl p-3 bg-white border-2 border-pencil border-wobbly rounded-full shadow-hard-sm hidden md:block z-20"
-                        style={{ top: "18%", right: "12%", rotate: "15deg" }}
-                        title="Fly me!"
-                    >
-                        ✈️
-                    </motion.div>
-
-                    <motion.div
-                        drag
-                        dragConstraints={heroRef}
-                        dragElastic={0.25}
-                        whileDrag={{ scale: 1.3, rotate: 18 }}
-                        className="absolute cursor-grab active:cursor-grabbing text-3xl p-3 bg-[#ffe4e6] border-2 border-pencil border-wobbly rounded-full shadow-hard-sm hidden md:block z-20"
-                        style={{ bottom: "25%", right: "8%", rotate: "-8deg" }}
-                        title="Boost me!"
-                    >
-                        ☕
-                    </motion.div>
-
-                    <motion.div
-                        drag
-                        dragConstraints={heroRef}
-                        dragElastic={0.25}
-                        whileDrag={{ scale: 1.3, rotate: -15 }}
-                        className="absolute cursor-grab active:cursor-grabbing text-3xl p-3 bg-[#e0f2fe] border-2 border-pencil border-wobbly rounded-full shadow-hard-sm hidden md:block z-20"
-                        style={{ bottom: "18%", left: "12%", rotate: "10deg" }}
-                        title="Clip me!"
-                    >
-                        📎
-                    </motion.div>
-                </>
-            ) : (
-                <>
-                    <div className="absolute text-3xl p-3 bg-[#fff9c4] border-2 border-pencil border-wobbly rounded-full shadow-hard-sm hidden md:block z-20" style={{ top: "22%", left: "8%", rotate: "-12deg" }} aria-hidden="true">✏️</div>
-                    <div className="absolute text-3xl p-3 bg-white border-2 border-pencil border-wobbly rounded-full shadow-hard-sm hidden md:block z-20" style={{ top: "18%", right: "12%", rotate: "15deg" }} aria-hidden="true">✈️</div>
-                    <div className="absolute text-3xl p-3 bg-[#ffe4e6] border-2 border-pencil border-wobbly rounded-full shadow-hard-sm hidden md:block z-20" style={{ bottom: "25%", right: "8%", rotate: "-8deg" }} aria-hidden="true">☕</div>
-                    <div className="absolute text-3xl p-3 bg-[#e0f2fe] border-2 border-pencil border-wobbly rounded-full shadow-hard-sm hidden md:block z-20" style={{ bottom: "18%", left: "12%", rotate: "10deg" }} aria-hidden="true">📎</div>
-                </>
-            )}
-
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-                <div className="mb-8 inline-block hero-reveal">
-                    <span className="inline-block px-6 py-2 bg-post-it border-2 border-pencil border-wobbly-sm shadow-hard-sm text-pencil text-lg font-bold tracking-wide transform hover:rotate-2 transition-transform cursor-pointer">
-                        Available for Full Stack Opportunities
-                    </span>
-                </div>
-
-                <h1 className="text-4xl xs:text-5xl sm:text-7xl md:text-8xl font-heading font-black mb-8 tracking-tight text-pencil relative inline-block select-none">
-                    <span className="block mb-2">
-                        Hi, I&apos;m{" "}
-                        {firstName.map((char, index) =>
-                            interactive ? (
-                                <motion.span
-                                    key={`fn-${index}`}
-                                    drag
-                                    dragConstraints={{ top: 0, left: 0, right: 0, bottom: 0 }}
-                                    dragElastic={0.65}
-                                    dragTransition={{ bounceStiffness: 600, bounceDamping: 15 }}
-                                    variants={letterVariants}
-                                    whileHover="hover"
-                                    whileTap="tap"
-                                    whileDrag={{ scale: 1.3, rotate: 12, color: "#e85d04" }}
-                                    className="inline-block cursor-grab active:cursor-grabbing text-accent select-none"
-                                >
-                                    {char}
-                                </motion.span>
-                            ) : (
-                                <LetterShell key={`fn-${index}`} char={char} color="#e85d04" />
-                            )
-                        )}
-                    </span>
-                    <span className="block">
-                        {lastName.map((char, index) =>
-                            interactive ? (
-                                <motion.span
-                                    key={`ln-${index}`}
-                                    drag
-                                    dragConstraints={{ top: 0, left: 0, right: 0, bottom: 0 }}
-                                    dragElastic={0.65}
-                                    dragTransition={{ bounceStiffness: 600, bounceDamping: 15 }}
-                                    variants={letterVariants}
-                                    whileHover="hover"
-                                    whileTap="tap"
-                                    whileDrag={{ scale: 1.3, rotate: 12, color: "#14b8a6" }}
-                                    className="inline-block cursor-grab active:cursor-grabbing select-none"
-                                >
-                                    {char}
-                                </motion.span>
-                            ) : (
-                                <LetterShell key={`ln-${index}`} char={char} />
-                            )
-                        )}
-                    </span>
-
-                    {/* Scribbled underline */}
-                    <svg className="absolute -bottom-4 left-0 w-full h-6 text-secondary hidden md:block" viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true">
-                        <path d="M5,10 Q100,20 150,5 T295,15" fill="none" stroke="currentColor" strokeWidth="4" />
-                    </svg>
-                </h1>
-
-                {/*
-                  LCP element. Plain <p> with a CSS-only reveal keyframe so the
-                  text is paintable on first frame and the compositor handles
-                  transform + opacity (no framer-motion wrapper).
-                */}
-                <p className="text-lg sm:text-2xl md:text-3xl text-pencil mb-12 max-w-3xl mx-auto font-sans leading-relaxed pointer-events-none hero-reveal">
-                    A 3rd Year B.Tech CSE Student and <span className="font-bold border-b-4 border-accent border-dashed">Full Stack Developer</span> creating intuitive, high-performance digital experiences.
-                </p>
-
-                <div
-                    className="flex flex-col sm:flex-row items-center justify-center gap-6 hero-reveal"
-                >
-                    <a href="#projects" className="w-full sm:w-auto">
-                        <Button variant="primary" className="w-full text-xl py-4 hover:-rotate-2">
-                            View My Work
-                        </Button>
-                    </a>
-                    <a href="#contact" className="w-full sm:w-auto">
-                        <Button variant="secondary" className="w-full text-xl py-4 bg-white hover:rotate-2">
-                            Contact Me
-                        </Button>
-                    </a>
-                </div>
-            </div>
-
-            {/* Scroll Indicator */}
-            <div
-                className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-10 hero-reveal"
+            {/* Subtle horizontal grid lines — architectural feel */}
+            <motion.div
+                style={{ y: bgY }}
+                className="absolute inset-0 pointer-events-none z-0 opacity-[0.04]"
             >
-                <a href="#about" aria-label="Scroll down to explore" className="text-pencil/50 hover:text-accent transition-colors block border-2 border-transparent hover:border-pencil rounded-full p-2 border-wobbly">
-                    <ArrowDown size={32} strokeWidth={2.5} />
-                </a>
-            </div>
+                <div className="h-px bg-white w-full absolute top-1/4" />
+                <div className="h-px bg-white w-full absolute top-1/2" />
+                <div className="h-px bg-white w-full absolute top-3/4" />
+            </motion.div>
+
+            <motion.div 
+                style={{ opacity: heroOpacity, scale: heroScale, y: heroY }}
+                className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 w-full relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-end"
+            >
+                {/* Left Column: Massive Typography */}
+                <div className="lg:col-span-8 flex flex-col items-start text-left">
+                    {/* Availability badge */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, ease: EASE, delay: 1.6 }}
+                        className="mb-10"
+                    >
+                        <span className="inline-flex items-center gap-3 text-xs font-mono tracking-[0.3em] uppercase text-white/40">
+                            <span className="relative flex h-1.5 w-1.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-60"></span>
+                              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white/80"></span>
+                            </span>
+                            Available for new opportunities
+                        </span>
+                    </motion.div>
+
+                    {/* Headline — word-by-word reveal with clip mask */}
+                    <motion.h1
+                        variants={container}
+                        initial="hidden"
+                        animate="show"
+                        className="text-[14vw] sm:text-[13vw] md:text-[11vw] lg:text-[10rem] xl:text-[11rem] font-heading font-bold mb-10 tracking-tighter text-white leading-[0.82] uppercase"
+                    >
+                        <span className="block overflow-hidden">
+                            <motion.span variants={wordVariant} className="inline-block">
+                                / {headlineWords1.join(' ')}
+                            </motion.span>
+                        </span>
+                        <span className="block overflow-hidden">
+                            <motion.span variants={wordVariant} className="inline-block">
+                                {headlineWords2.join(' ')}
+                            </motion.span>
+                        </span>
+                    </motion.h1>
+
+                    {/* Subtitle — slides in */}
+                    <motion.p
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1.0, ease: EASE, delay: 2.2 }}
+                        className="text-lg sm:text-xl md:text-2xl text-white/50 font-medium max-w-2xl font-sans leading-relaxed"
+                    >
+                        Full-Stack Developer building fast, reliable, and highly scalable web products.
+                    </motion.p>
+                </div>
+
+                {/* Right Column: Scroll Hint — minimal vertical line */}
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1.0, delay: 2.8 }}
+                    className="lg:col-span-4 hidden lg:flex justify-end items-end pb-8"
+                >
+                    <div className="flex flex-col items-center gap-4">
+                        <motion.div
+                            animate={{ scaleY: [0.3, 1, 0.3] }}
+                            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                            className="w-px h-16 bg-gradient-to-b from-transparent via-white/60 to-transparent origin-top"
+                        />
+                        <span className="text-white/30 font-mono text-[10px] tracking-[0.3em] uppercase rotate-90 mt-8 origin-center whitespace-nowrap">
+                            Scroll
+                        </span>
+                    </div>
+                </motion.div>
+            </motion.div>
+
+            {/* Bottom fade to black gradient — seamless section transition */}
+            <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black to-transparent pointer-events-none z-[1]" />
         </section>
     );
 };

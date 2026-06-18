@@ -1,22 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Kalam, Patrick_Hand } from 'next/font/google';
+import { Inter, Space_Mono, Share_Tech_Mono } from 'next/font/google';
 import "../index.css";
 import ClientLayout from "./ClientLayout";
 import { certificates } from "../data/certificates";
+import { GridBackground } from "../components/GridBackground";
 
-const kalam = Kalam({
-    weight: '700',
+const inter = Inter({
     subsets: ['latin'],
     display: 'swap',
-    variable: '--font-kalam',
+    variable: '--font-inter',
 });
 
-const patrickHand = Patrick_Hand({
+const spaceMono = Space_Mono({
+    weight: ['400', '700'],
+    subsets: ['latin'],
+    display: 'swap',
+    variable: '--font-mono',
+});
+
+const shareTech = Share_Tech_Mono({
     weight: '400',
     subsets: ['latin'],
     display: 'swap',
-    variable: '--font-patrick-hand',
+    variable: '--font-heading',
 });
 
 const SITE_URL = 'https://chksoumya.in';
@@ -24,24 +31,19 @@ const SITE_URL = 'https://chksoumya.in';
 export const metadata: Metadata = {
     metadataBase: new URL(SITE_URL),
     title: {
-        default: 'Soumya Chakraborty | Full Stack Developer & Software Engineer',
+        default: 'Soumya Chakraborty — Independent Developer',
         template: '%s | Soumya Chakraborty',
     },
     description:
-        'Soumya Chakraborty is a CS undergraduate and Full Stack Developer with 2+ years of experience building production web apps with React, Next.js, Node.js, and Python. 46 industry certifications from Google, IBM, AWS, NVIDIA, Microsoft, and Meta.',
+        'Soumya Chakraborty — independent full-stack developer and CS undergraduate. Building production web products with React, Next.js, Node.js, and Python.',
     keywords: [
         'Soumya Chakraborty',
         'Full Stack Developer',
         'React Developer',
-        'Node.js Developer',
         'Next.js Developer',
-        'Python Developer',
+        'Node.js Developer',
         'Software Engineer India',
         'Kolkata Developer',
-        'AWS Certified',
-        'IBM Certified',
-        'Google AI Certified',
-        'NVIDIA Certified',
         'Portfolio',
     ],
     authors: [{ name: 'Soumya Chakraborty', url: SITE_URL }],
@@ -55,23 +57,23 @@ export const metadata: Metadata = {
         locale: 'en_US',
         url: SITE_URL + '/',
         siteName: 'Soumya Chakraborty Portfolio',
-        title: 'Soumya Chakraborty — Full Stack Developer & Software Engineer',
+        title: 'Soumya Chakraborty — Independent Developer',
         description:
-            'CS undergraduate and Full Stack Developer building modern web apps with React, Next.js, Node.js, and Python. 46 professional certifications from Google, IBM, AWS, NVIDIA, Microsoft, and Meta.',
+            'Independent full-stack developer and CS undergraduate building production web products with React, Next.js, Node.js, and Python.',
         images: [
             {
                 url: '/og-image.png',
                 width: 1200,
                 height: 630,
-                alt: 'Soumya Chakraborty — Full Stack Developer',
+                alt: 'Soumya Chakraborty — Independent Developer',
             },
         ],
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'Soumya Chakraborty | Full Stack Developer',
+        title: 'Soumya Chakraborty | Independent Developer',
         description:
-            'Building production web apps with React, Next.js, Node.js, and Python. Google · IBM · AWS · NVIDIA · Microsoft · Meta certified.',
+            'Building production web products with React, Next.js, Node.js, and Python.',
         images: ['/og-image.png'],
         site: '@soumya_chk',
         creator: '@soumya_chk',
@@ -197,10 +199,10 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en" suppressHydrationWarning className={`${kalam.variable} ${patrickHand.variable}`}>
+        <html lang="en" suppressHydrationWarning className={`${inter.variable} ${spaceMono.variable} ${shareTech.variable}`}>
             <head>
                 <link rel="manifest" href="/manifest.json" />
-                <meta name="theme-color" content="#e85d04" />
+                <meta name="theme-color" content="#000000" />
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -211,24 +213,23 @@ export default function RootLayout({
                 />
             </head>
             <body>
+                <GridBackground />
                 <a
                     href="#main-content"
-                    className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:bg-accent focus:text-white focus:px-4 focus:py-2 focus:rounded focus:shadow-hard focus:outline-none focus:ring-2 focus:ring-pencil"
+                    className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:bg-foreground focus:text-background focus:px-4 focus:py-2 focus:rounded-none focus:outline-none focus:ring-2 focus:ring-accent"
                 >
                     Skip to main content
                 </a>
                 <noscript>
-                    <h1>Soumya Chakraborty — Full Stack Developer & Software Engineer</h1>
+                    <h1>Soumya Chakraborty — Independent Developer</h1>
                     <p>
-                        Welcome to the portfolio of Soumya Chakraborty, a CS undergraduate and
-                        Full Stack Developer based in Kolkata, India. Specializing in React,
-                        Next.js, Node.js, and Python. 46+ professional certifications from
-                        Google, IBM, AWS, NVIDIA, Microsoft, and Meta.
+                        Welcome to the portfolio of Soumya Chakraborty, an independent
+                        full-stack developer and CS undergraduate based in Kolkata, India.
+                        Specializing in React, Next.js, Node.js, and Python.
                     </p>
                     <p>
                         <Link href="/#projects">Projects</Link> ·{' '}
-                        <Link href="/#experience">Experience</Link> ·{' '}
-                        <Link href="/#certificates">Certificates</Link> ·{' '}
+                        <Link href="/#capabilities">Capabilities</Link> ·{' '}
                         <Link href="/#contact">Contact</Link>
                     </p>
                 </noscript>

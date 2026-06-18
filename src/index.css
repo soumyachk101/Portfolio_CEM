@@ -1,124 +1,164 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
+    color-scheme: dark;
   }
-  
+
   body {
-    @apply bg-background text-foreground antialiased overflow-x-hidden transition-colors duration-300;
-    /* Paper Texture */
-    background-image: radial-gradient(#e5e0d8 1px, transparent 1px);
-    background-size: 24px 24px;
-    font-family: var(--font-patrick-hand), 'Patrick Hand', cursive;
+    @apply bg-background text-foreground antialiased overflow-x-hidden;
+    font-family: var(--font-inter), 'Inter', sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-kalam), 'Kalam', cursive;
-    font-weight: 700;
+    font-family: var(--font-heading), 'Share Tech Mono', monospace;
+    font-weight: 400;
   }
 }
 
-/* Custom scrollbar - stylized like pencil sketches */
+/* Dark cinematic scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-muted;
+  background: #000;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-pencil rounded-none border-2 border-background;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-accent;
+  background: rgba(255, 255, 255, 0.25);
 }
 
 @layer utilities {
-  .border-wobbly {
-    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  /* Animated film grain overlay */
+  .film-grain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    animation: grain 0.5s steps(1) infinite;
   }
 
-  .border-wobbly-alt {
-    border-radius: 15px 255px 15px 225px / 255px 15px 225px 15px;
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+    pointer-events: none;
   }
 
-  .text-gradient {
-    /* Kept for fallback, but hand-drawn usually avoids gradients */
-    background: linear-gradient(to right, #2d2d2d, #ff4d4d);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+  .interactive-button {
+    transition: transform 160ms var(--ease-out), opacity 200ms ease, color 200ms ease, border-color 200ms ease;
+  }
+
+  .interactive-button:active {
+    transform: scale(0.97);
+  }
+
+  .small-caps {
+    font-variant-caps: small-caps;
+    letter-spacing: 0.08em;
   }
 }
 
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%) skewX(-12deg);
-  }
-
-  100% {
-    transform: translateX(200%) skewX(-12deg);
-  }
+/* Animated film grain keyframes */
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-5%, -10%); }
+  20% { transform: translate(-15%, 5%); }
+  30% { transform: translate(7%, -25%); }
+  40% { transform: translate(-5%, 25%); }
+  50% { transform: translate(-15%, 10%); }
+  60% { transform: translate(15%, 0%); }
+  70% { transform: translate(0%, 15%); }
+  80% { transform: translate(3%, 35%); }
+  90% { transform: translate(-10%, 10%); }
 }
 
-/*
- * Composable, compositor-friendly utilities.
- *
- * - `.pulse-opacity` animates only `opacity` so it stays GPU-composited
- *   even when nested inside a framer-motion wrapper.
- * - `.hero-reveal` is a tiny fade/translate used by the Hero so the LCP
- *   element is paintable on first frame (no framer-motion gate).
- * Both respect `prefers-reduced-motion`.
- */
-@keyframes pulse-opacity-kf {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.55; }
-}
-
-.pulse-opacity {
-  animation: pulse-opacity-kf 1.5s ease-in-out infinite;
-  will-change: opacity;
-}
-
-@keyframes hero-reveal-kf {
+/* Cinematic text clip-path reveal from bottom */
+@keyframes reveal-up {
   from {
-    opacity: 0;
-    transform: translate3d(0, 14px, 0);
+    clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
+    transform: translateY(100%);
   }
   to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    transform: translateY(0);
   }
 }
 
-.hero-reveal {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-  animation: hero-reveal-kf 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-  will-change: transform, opacity;
+/* Cinematic horizontal wipe reveal */
+@keyframes reveal-left {
+  from {
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+  }
+  to {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+/* Slow float for ambient orbs */
+@keyframes float-slow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(60px, -40px) scale(1.1); }
+  66% { transform: translate(-40px, 60px) scale(0.95); }
+}
+
+/* Pulse glow for accents */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* Vertical marquee scroll */
+@keyframes marquee-up {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+
+/* Custom cursor — hide native on fine pointers */
+@media (pointer: fine) {
+  @layer base {
+    body { cursor: none; }
+    a, button, [role="button"], input, textarea, select { cursor: none; }
+  }
+}
+
+/* Smooth focus ring for keyboard nav */
+:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.4);
+  outline-offset: 4px;
+}
+
+/* Preloader curtain split */
+@keyframes curtain-up {
+  from { transform: translateY(0); }
+  to { transform: translateY(-100%); }
+}
+
+@keyframes curtain-down {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pulse-opacity,
-  .hero-reveal {
-    animation: none !important;
-    transform: none !important;
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
-}
-
-/* Accessibility: Increase opacity of pencil text utility classes to satisfy WCAG contrast ratio requirements */
-.text-pencil\/30 {
-  color: rgba(45, 45, 45, 0.7) !important;
-}
-.text-pencil\/40 {
-  color: rgba(45, 45, 45, 0.75) !important;
-}
-.text-pencil\/50 {
-  color: rgba(45, 45, 45, 0.8) !important;
-}
-.text-pencil\/60 {
-  color: rgba(45, 45, 45, 0.85) !important;
 }

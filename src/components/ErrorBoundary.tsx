@@ -26,7 +26,7 @@ class ErrorBoundary extends Component<Props, State> {
     public render() {
         if (this.state.hasError) {
             return (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950 text-white p-4">
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background text-foreground p-4">
                     <div className="max-w-md w-full bg-slate-900 p-6 rounded-lg border border-red-500/50 shadow-xl">
                         <h1 className="text-2xl font-bold text-red-500 mb-4">Something went wrong</h1>
                         <p className="mb-4 text-gray-300">The application encountered an error and could not render.</p>
@@ -34,7 +34,7 @@ class ErrorBoundary extends Component<Props, State> {
                             {this.state.error?.toString()}
                         </pre>
                         <button
-                            className="mt-6 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded transition-colors w-full"
+                            className="mt-6 px-4 py-2 bg-foreground hover:bg-neutral-800 text-white rounded transition-colors w-full"
                             onClick={() => window.location.reload()}
                         >
                             Reload Page

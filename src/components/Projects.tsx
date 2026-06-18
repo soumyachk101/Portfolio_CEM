@@ -1,770 +1,208 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
-import { ExternalLink, Github, Terminal as TerminalIcon, FileCode, Cpu, Play, Terminal, Info } from 'lucide-react';
-import { Card } from './ui/Card';
+import { useRef } from 'react';
+import { motion, useScroll, useTransform, useMotionTemplate } from 'framer-motion';
+import { ArrowRight, Github } from 'lucide-react';
 
 interface Project {
+    id: string;
     title: string;
-    desc: string;
+    role: string;
+    tagline: string;
+    problem: string;
+    approach: string;
+    outcome: string;
     tags: string[];
-    image: string;
     github: string;
     live: string;
-    bg: string;
-    border: string;
-    text: string;
-    codeFile: string;
-    code: string;
-    techJson: string;
-    terminalLogs: string[];
 }
 
-const Projects = () => {
-    const [activeIndex, setActiveIndex] = useState(0);
-    const [activeTab, setActiveTab] = useState<'code' | 'json' | 'terminal'>('code');
-    const [terminalLines, setTerminalLines] = useState<string[]>([]);
-    const [isTerminalRunning, setIsTerminalRunning] = useState(false);
-    const terminalTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-    const projects: Project[] = [
-        {
-            title: "SHIPORDIE",
-            desc: "Multi-agent platform for validating SaaS ideas and optimizing resumes using CrewAI & LangGraph.",
-            tags: ["Next.js", "FastAPI", "CrewAI", "LangGraph", "Docker", "AI"],
-            image: "/images/project-shipordie.png",
-            github: "https://github.com/soumyachk101/ShipOrDie",
-            live: "#",
-            bg: "bg-[#e0e7ff]", // indigo
-            border: "border-[#6366f1]",
-            text: "text-[#3730a3]",
-            codeFile: "orchestrator.py",
-            code: `# ShipOrDie: Multi-Agent Orchestrator (LangGraph)
-from langgraph.graph import StateGraph, END
-from backend.pipeline.state import PipelineState
-from backend.agents.scraper_agent import ScraperAgent
-from backend.agents.synthesizer_agent import SynthesizerAgent
-from backend.agents.idea_gen_agent import IdeaGenAgent
-from backend.agents.monetization_agent import MonetizationAgent
-
-async def scraper_node(state: PipelineState) -> PipelineState:
-    signals = await ScraperAgent().run()
-    return {**state, "status": "scraping", "signals": signals}
-
-async def synthesizer_node(state: PipelineState) -> PipelineState:
-    clusters = await SynthesizerAgent().run(state["signals"])
-    return {**state, "status": "synthesizing", "clusters": clusters}
-
-async def idea_gen_node(state: PipelineState) -> PipelineState:
-    idea_cards = await IdeaGenAgent().run(state["clusters"])
-    return {**state, "status": "generating", "idea_cards": idea_cards}
-
-async def monetization_node(state: PipelineState) -> PipelineState:
-    agent = MonetizationAgent()
-    reports = [await agent.run(idea) for idea in state["idea_cards"]]
-    return {**state, "status": "monetizing", "monetization_reports": reports}
-
-def build_pipeline() -> StateGraph:
-    graph = StateGraph(PipelineState)
-    
-    # Register Nodes
-    graph.add_node("scrape", scraper_node)
-    graph.add_node("synthesize", synthesizer_node)
-    graph.add_node("generate", idea_gen_node)
-    graph.add_node("monetize", monetization_node)
-    
-    # Set Flow Edges
-    graph.set_entry_point("scrape")
-    graph.add_edge("scrape", "synthesize")
-    graph.add_edge("synthesize", "generate")
-    graph.add_edge("generate", "monetize")
-    graph.add_edge("monetize", END)
-    
-    return graph.compile()`,
-            techJson: `{
-  "framework": "Next.js 14, Zustand",
-  "backend": "FastAPI, Python",
-  "ai_agents": "CrewAI, LangGraph",
-  "data_layer": "PostgreSQL, Redis, ChromaDB",
-  "infrastructure": "Docker, Cloudflare R2"
-}`,
-            terminalLogs: [
-                "soumya@portfolio:~$ docker-compose up -d",
-                "[docker] Spin up Postgres, Redis, and ChromaDB...",
-                "[postgres] Database instance is healthy.",
-                "[redis] Redis queue connection active.",
-                "soumya@portfolio:~$ python3 main.py",
-                "[shipordie] Starting up ShipOrDie API server...",
-                "[crewai] Agent Trend Scraper initialized.",
-                "[crewai] Agent RAG Synthesizer initialized.",
-                "[crewai] Agent Idea Architect initialized.",
-                "[success] Server bound to port 8000. Pipeline ready."
-            ]
-        },
-        {
-            title: "DRISHTI AI",
-            desc: "AI network scanner that visualizes attack paths and generates security remediation playbooks.",
-            tags: ["React", "FastAPI", "Tailwind", "Groq", "Spline", "AI"],
-            image: "/images/project-drishti.png",
-            github: "https://github.com/soumyachk101/Drishti-Security",
-            live: "https://drishtisecurity.vercel.app/",
-            bg: "bg-[#fef9c3]", // yellow
-            border: "border-[#eab308]",
-            text: "text-[#854d0e]",
-            codeFile: "remediation.py",
-            code: `# Drishti AI: Risk Intelligence Scan
-import security_scanner
-
-class DrishtiAI:
-    def __init__(self):
-        self.role = "Network Risk Intelligence"
-        self.mission = "Visualize blast radius before threat actors do"
-    
-    def generate_remediation(self):
-        paths = security_scanner.analyze()
-        report = paths.create_board_report()
-        return "Remediation plan compiled and pushed!"`,
-            techJson: `{
-  "framework": "React, Tailwind",
-  "backend": "FastAPI",
-  "ai_inference": "Groq LLaMA 3",
-  "interactive_mesh": "Spline 3D"
-}`,
-            terminalLogs: [
-                "soumya@portfolio:~$ python3 scan_risk.py",
-                "[INFO] Booting Drishti AI Scanner...",
-                "[SCAN] Auditing network ports and node paths...",
-                "[ALERT] 3 critical attack paths identified!",
-                "[FIX] Automatically compiling remediation playbooks...",
-                "[SUCCESS] Secured. Board-ready security report active."
-            ]
-        },
-        {
-            title: "CORTEX",
-            desc: "AI finance tracker with natural language processing, custom Pomodoro timers, and a botanical UI.",
-            tags: ["Next.js", "Supabase", "Gemini API", "Tailwind", "Groq"],
-            image: "/images/project-cortex.png",
-            github: "https://github.com/soumyachk101/Cortex",
-            live: "https://cortexgo.vercel.app",
-            bg: "bg-[#dcfce7]", // green
-            border: "border-[#22c55e]",
-            text: "text-[#14532d]",
-            codeFile: "dashboard.tsx",
-            code: `// Cortex: Personal Finance & Productivity
-import { FocusTimer, GeminiAgent } from 'cortex-core';
-
-export default function Dashboard() {
-    const tracking = GeminiAgent.parseNaturalLanguage();
-    return (
-        <main className="organic-botanical-ui p-6">
-            <FocusTimer minutes={25} style="pomodoro" />
-            <Transactions data={tracking} />
-        </main>
-    );
-}`,
-            techJson: `{
-  "framework": "Next.js 15 App Router",
-  "database": "Supabase PostgreSQL",
-  "nlp_model": "Gemini 1.5 Pro API",
-  "agent_inference": "Groq Cloud"
-}`,
-            terminalLogs: [
-                "soumya@portfolio:~$ npm run build && npm start",
-                "[cortex] Initializing WebAssembly modules...",
-                "[supabase] Realtime listener connected to ledger...",
-                "[gemini] NLP parser validated.",
-                "[timer] Focus timer online.",
-                "[server] Cortex application listening on port 3000."
-            ]
-        },
-        {
-            title: "NEETI AI",
-            desc: "AI recruitment platform with collaborative coding, automated evaluations, and WebRTC video.",
-            tags: ["FastAPI", "React", "LiveKit", "Supabase", "AI"],
-            image: "/images/project-neeti-ai.png",
-            github: "https://github.com/soumyachk101/Neeti-AI",
-            live: "https://neetiai.vercel.app/",
-            bg: "bg-[#dbeafe]", // blue
-            border: "border-[#3b82f6]",
-            text: "text-[#1e3a8a]",
-            codeFile: "recruiter.py",
-            code: `# Neeti AI: Collaborative Recruitment Platform
-import livekit_stream
-
-def initialize_room(candidate_id):
-    stream = livekit_stream.connect()
-    room = stream.create_collaborative_ide()
-    evaluator = room.enable_auto_evaluation()
-    return room`,
-            techJson: `{
-  "backend": "FastAPI, Python",
-  "frontend": "React",
-  "media_stream": "LiveKit WebRTC Video",
-  "cloud_db": "Supabase"
-}`,
-            terminalLogs: [
-                "soumya@portfolio:~$ ./start_interview.sh --candidate=41",
-                "[livekit] Constructing RTC session...",
-                "[ide] Real-time code sharing synchronized.",
-                "[evaluator] AI pipelines ready to evaluate compiler logs.",
-                "[webrtc] Video connection stabilized."
-            ]
-        },
-        {
-            title: "PHYGITAL TRACE",
-            desc: "Supply chain validation bridging physical products and digital twins using blockchain and NFC.",
-            tags: ["Blockchain", "IoT", "React", "Node.js", "Solidity"],
-            image: "/images/project-phygital-trace.png",
-            github: "https://github.com/soumyachk101/Phygital-trace-done",
-            live: "#",
-            bg: "bg-[#f3e8ff]", // purple
-            border: "border-[#a855f7]",
-            text: "text-[#581c87]",
-            codeFile: "Traceability.sol",
-            code: `// Phygital Trace: Blockchain Supply Chain Ledger
-pragma solidity ^0.8.0;
-
-contract Traceability {
-    struct Product { uint id; string physicalTwinNFC; bool authentic; }
-    mapping(uint => Product) public registry;
-    
-    function verifyAuthenticity(uint id) public view returns (bool) {
-        return registry[id].authentic;
+const projects: Project[] = [
+    {
+        id: "001",
+        title: "ShipOrDie",
+        role: "Lead Architect",
+        tagline: "Multi-agent SaaS platform orchestrating complex AI workflows.",
+        problem: "Executing concurrent, reliable AI operations requires an orchestration layer that standard LLM APIs don't provide out of the box.",
+        approach: "Architected a scalable Python/FastAPI microservice using LangGraph and CrewAI to manage stateful, multi-agent workflows.",
+        outcome: "Achieved 99.9% uptime on batch processes, reduced latency by 40%, and deployed containerized services.",
+        tags: ["Next.js", "FastAPI", "CrewAI", "Docker"],
+        github: "https://github.com/soumyachk101/ShipOrDie",
+        live: "#"
+    },
+    {
+        id: "002",
+        title: "Drishti AI",
+        role: "Security Engineer",
+        tagline: "AI network scanner visualizing attack paths and security remediation.",
+        problem: "Security teams struggle to prioritize vulnerabilities among thousands of scattered alerts and false positives.",
+        approach: "Built a risk intelligence engine using Groq LLaMA 3 to analyze network topologies and generate actionable playbooks.",
+        outcome: "Synthesizes vulnerabilities into top 3 attack paths within seconds, drastically cutting down manual triage.",
+        tags: ["React", "FastAPI", "Groq", "Spline"],
+        github: "https://github.com/soumyachk101/Drishti-Security",
+        live: "https://drishtisecurity.vercel.app/"
+    },
+    {
+        id: "003",
+        title: "Neeti AI",
+        role: "Full Stack Engineer",
+        tagline: "Collaborative recruitment platform with real-time IDE and AI evaluation.",
+        problem: "Technical interviews often lack real-time synchronization and objective, automated evaluation metrics.",
+        approach: "Developed a WebRTC-powered hiring environment using LiveKit for low-latency video and a synced IDE.",
+        outcome: "Secured 1st Place at Code for Change 2.0. Enabled seamless real-time interviews with automated analytics.",
+        tags: ["FastAPI", "React", "LiveKit"],
+        github: "https://github.com/soumyachk101/Neeti-AI",
+        live: "https://neetiai.vercel.app/"
     }
-}`,
-            techJson: `{
-  "ledger": "Solidity Smart Contract",
-  "network": "Ethereum / Hardhat",
-  "hardware": "NFC Tags & IoT Twins",
-  "app_client": "React (Web3)"
-}`,
-            terminalLogs: [
-                "soumya@portfolio:~$ npx hardhat deploy --network mainnet",
-                "[hardhat] Compiling 2 Solidity source files...",
-                "[NFC] Syncing physical hardware identifiers...",
-                "[blockchain] Deploying Traceability contract on ledger...",
-                "[success] Contract active at: 0x4f3ea2d...7ff"
-            ]
-        },
-        {
-            title: "STREAM.TV",
-            desc: "Premium video streaming client with real-time category filtering and a custom media player.",
-            tags: ["React", "Vite", "Tailwind", "RapidAPI"],
-            image: "/images/project-streamtv.png",
-            github: "https://github.com/soumyachk101/Stream.Tv-Client",
-            live: "#",
-            bg: "bg-[#ecfeff]", // cyan
-            border: "border-[#06b6d4]",
-            text: "text-[#083344]",
-            codeFile: "VideoPlayer.tsx",
-            code: `// Stream.Tv: Video Streaming client
-import { RapidAPI } from 'stream-apis';
+];
 
-export const VideoPlayer = ({ videoId }) => {
-    const videoDetails = RapidAPI.fetchFeed(videoId);
-    return (
-        <div className="netflix-dark-theme font-sans">
-            <Player src={videoDetails.streamUrl} autoPlay />
-            <Categories filter={videoDetails.tags} />
-        </div>
-    );
-};`,
-            techJson: `{
-  "client": "React SPA (Vite)",
-  "source": "RapidAPI Video Feeds",
-  "style": "Tailwind (Dark Mode Theme)",
-  "player": "Custom HTML5 Media Player"
-}`,
-            terminalLogs: [
-                "soumya@portfolio:~$ npm run dev --host",
-                "[vite] Dev server running on port 5173.",
-                "[feed] RapidAPI credential validation success.",
-                "[player] Pre-buffering chunk data...",
-                "[app] Stream.tv dashboard populated."
-            ]
-        },
-        {
-            title: "HEALTHTRACK+",
-            desc: "Medical record platform with real-time biometric tracking and HIPAA-compliant logs.",
-            tags: ["React", "Express", "Node.js", "MongoDB"],
-            image: "/images/project-healthtrack.png",
-            github: "https://github.com/soumyachk101/HealthTrack-Client",
-            live: "https://www.healthtrack.store/",
-            bg: "bg-[#ffe4e6]", // rose
-            border: "border-[#fb7185]",
-            text: "text-[#9f1239]",
-            codeFile: "patient_server.js",
-            code: `// HealthTrack+: Patient record server
-const express = require('express');
-const mongoose = require('mongoose');
+const ProjectCard = ({ project, index }: { project: Project; index: number }) => {
+    const container = useRef<HTMLDivElement>(null);
+    
+    const { scrollYProgress } = useScroll({
+        target: container,
+        offset: ['start end', 'end start']
+    });
 
-const patientSchema = new mongoose.Schema({
-    name: String,
-    biometrics: { heartRate: Number, oxygen: Number }
-});
+    const rotateX = useTransform(scrollYProgress, [0, 0.45, 0.5, 1], [45, 0, 0, -12]);
+    const opacity = useTransform(scrollYProgress, [0, 0.3, 0.5, 0.8], [0, 1, 1, 0.2]);
+    const scale = useTransform(scrollYProgress, [0, 0.45, 0.5, 1], [0.8, 1, 1, 0.85]);
+    const blurValue = useTransform(scrollYProgress, [0, 0.3, 0.5, 0.8], [12, 0, 0, 8]);
+    const filter = useMotionTemplate`blur(${blurValue}px)`;
 
-const Patient = mongoose.model('Patient', patientSchema);`,
-            techJson: `{
-  "frontend": "React",
-  "server": "Express.js Node.js",
-  "database": "MongoDB Atlas",
-  "security": "HIPAA-compliant logs"
-}`,
-            terminalLogs: [
-                "soumya@portfolio:~$ node server.js",
-                "[mongodb] Connected to cluster-health-db...",
-                "[express] Server bound to port 8080.",
-                "[biometrics] Telemetry feed online.",
-                "[security] HIPAA log rotation initialized."
-            ]
-        },
-        {
-            title: "COUNTRY FINDER",
-            desc: "Interactive explorer for searching and discovering country information via REST Countries API.",
-            tags: ["React", "REST Countries API", "Tailwind"],
-            image: "/images/project-country.png",
-            github: "https://github.com/soumyachk101/Country_Finder",
-            live: "https://wcountryfinder.netlify.app/",
-            bg: "bg-[#ffedd5]", // orange
-            border: "border-[#f97316]",
-            text: "text-[#7c2d12]",
-            codeFile: "explorer.js",
-            code: `// Country Finder: Geographic explorer
-async function fetchCountryData(name) {
-    const res = await fetch(\`https://restcountries.com/v3.1/name/\${name}\`);
-    const [data] = await res.json();
-    return {
-        capital: data.capital[0],
-        population: data.population
-    };
-}`,
-            techJson: `{
-  "runtime": "React Hooks SPA",
-  "style": "Tailwind Grid",
-  "source": "REST Countries API"
-}`,
-            terminalLogs: [
-                "soumya@portfolio:~$ yarn start",
-                "[country-finder] Fetching API index...",
-                "[api] restcountries.com responding successfully.",
-                "[app] Search indices ready for query parsing."
-            ]
-        },
-        {
-            title: "STOCK VOLATILITY",
-            desc: "Financial analysis dashboard for visualizing stock market volatility using Chart.js.",
-            tags: ["React", "Finance API", "Charts.js"],
-            image: "/images/project-stock.png",
-            github: "https://github.com/soumyachk101/Stock-Volatility",
-            live: "#",
-            bg: "bg-[#fafaf9]", // stone
-            border: "border-[#78716c]",
-            text: "text-[#44403c]",
-            codeFile: "VolatilityTracker.tsx",
-            code: `// Stock Volatility: Chart.js visualization
-import { Chart } from 'chart.js';
-
-export function VolatilityChart({ ticker }) {
-    const marketFeed = fetchFinanceFeed(ticker);
-    return (
-        <div className="financial-analytics">
-            <Chart data={marketFeed} type="line" />
-        </div>
-    );
-}`,
-            techJson: `{
-  "frontend": "React SPA",
-  "visuals": "Chart.js / React-Chartjs-2",
-  "feed_source": "Finance Market API"
-}`,
-            terminalLogs: [
-                "soumya@portfolio:~$ yarn start",
-                "[stock-volatility] Subscribing to stock tickers...",
-                "[chart] Compiling line rendering paths...",
-                "[ticker] Feed connected successfully."
-            ]
-        },
-        {
-            title: "NEXUSOPS",
-            desc: "CI/CD orchestration platform for automated deployments using Kubernetes, Docker, and Ansible.",
-            tags: ["DevOps", "Docker", "Kubernetes", "AWS", "Terraform"],
-            image: "/images/project-nexusops.png",
-            github: "https://github.com/soumyachk101/NexusOps-3.0",
-            live: "https://nexusops-sigma.vercel.app",
-            bg: "bg-[#ccfbf1]", // teal
-            border: "border-[#14b8a6]",
-            text: "text-[#115e59]",
-            codeFile: "playbook.yaml",
-            code: `# NexusOps: Infrastructure Playbook
-- name: Setup CI/CD Orchestration
-  hosts: all
-  tasks:
-    - name: Ensure Docker runs
-      service: name=docker state=started
-    - name: Spin up Kubernetes cluster
-      k8s: definition="{{ lookup('file', 'k8s.yaml') }}"`,
-            techJson: `{
-  "orchestration": "Kubernetes & Docker",
-  "infrastructure": "Terraform, Ansible",
-  "hosting": "AWS EC2/S3",
-  "workflow": "DevOps Pipelines"
-}`,
-            terminalLogs: [
-                "soumya@portfolio:~$ ansible-playbook playbook.yaml",
-                "[nexusops] Running deployment playbook...",
-                "[k8s] Provisioning cluster nodes...",
-                "[docker] Initializing containers...",
-                "[success] Infrastructure active at: nexusops.io"
-            ]
-        }
-    ];
-
-    const currentProject = projects[activeIndex];
-
-    // Reset tab and clear pending timers when project changes
-    useEffect(() => {
-        if (terminalTimeoutRef.current) {
-            clearTimeout(terminalTimeoutRef.current);
-            terminalTimeoutRef.current = null;
-        }
-        setActiveTab('code');
-        setTerminalLines([]);
-        setIsTerminalRunning(false);
-    }, [activeIndex]);
-
-    // Also clear timers on component unmount
-    useEffect(() => {
-        return () => {
-            if (terminalTimeoutRef.current) {
-                clearTimeout(terminalTimeoutRef.current);
-            }
-        };
-    }, []);
-
-    const highlightCode = (codeText: string) => {
-        return codeText.split('\n').map((line, lineIdx) => {
-            // Escape HTML characters first
-            let escaped = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-            const placeholders: string[] = [];
-            const addPlaceholder = (html: string) => {
-                const index = placeholders.length;
-                placeholders.push(html);
-                return `___PLACEHOLDER_${index}___`;
-            };
-
-            // 1. Temporarily replace string literals
-            escaped = escaped.replace(/(["'])(?:\\.|[^\\])*?\1/g, (match) => {
-                return addPlaceholder(`<span class="text-[#2d5da1] font-bold">${match}</span>`);
-            });
-
-            // 2. Temporarily replace comments
-            escaped = escaped.replace(/(#.*|\/\/.*)/g, (match) => {
-                return addPlaceholder(`<span class="text-pencil/40 italic">${match}</span>`);
-            });
-
-            // 3. Highlight keywords
-            escaped = escaped.replace(/\b(class|def|import|from|export|default|function|return|contract|mapping|pragma|solidity|struct|public|view|const|async|await|let|var)\b/g, '<span class="text-accent font-bold">$1</span>');
-
-            // 4. Highlight numbers
-            escaped = escaped.replace(/\b(\d+)\b/g, '<span class="text-amber-600 font-bold">$1</span>');
-
-            // 5. Highlight custom identifiers
-            escaped = escaped.replace(/\b(DrishtiAI|Cortex|NeetiAI|Traceability|VideoPlayer|VolatilityChart|__init__|scan_network|generate_remediation|analyze|create_board_report|parseNaturalLanguage|FocusTimer|Transactions|initialize_room|connect|create_collaborative_ide|enable_auto_evaluation|verifyAuthenticity|fetchFeed|autoPlay|fetchCountryData|VolatilityChart|playbook|scraper_node|synthesizer_node|idea_gen_node|monetization_node|build_pipeline|PipelineState|StateGraph|ScraperAgent|SynthesizerAgent|IdeaGenAgent|MonetizationAgent)\b/g, '<span class="text-secondary font-bold">$1</span>');
-
-            // 6. Restore placeholders in reverse order
-            for (let i = placeholders.length - 1; i >= 0; i--) {
-                escaped = escaped.replace(`___PLACEHOLDER_${i}___`, placeholders[i]);
-            }
-
-            return (
-                <div key={lineIdx} className="flex gap-4 font-mono text-sm leading-relaxed">
-                    <span className="text-pencil/50 text-right select-none w-6">{lineIdx + 1}</span>
-                    <span dangerouslySetInnerHTML={{ __html: escaped || '&nbsp;' }} />
-                </div>
-            );
-        });
-    };
-
-    const runTerminal = () => {
-        if (isTerminalRunning) return;
-        setIsTerminalRunning(true);
-        setTerminalLines([]);
-
-        const logs = currentProject.terminalLogs;
-        let currentLine = 0;
-
-        const printLine = () => {
-            if (currentLine < logs.length) {
-                setTerminalLines(prev => [...prev, logs[currentLine]]);
-                currentLine++;
-                terminalTimeoutRef.current = setTimeout(printLine, 600);
-            } else {
-                setTerminalLines(prev => [
-                    ...prev, 
-                    `\r[SUCCESS] Redirecting to live simulation...`
-                ]);
-                terminalTimeoutRef.current = setTimeout(() => {
-                    setIsTerminalRunning(false);
-                    if (currentProject.live !== "#") {
-                        window.open(currentProject.live, '_blank', 'noopener,noreferrer');
-                    } else {
-                        window.open(currentProject.github, '_blank', 'noopener,noreferrer');
-                    }
-                }, 1000);
-            }
-        };
-
-        printLine();
-    };
+    const topOffset = `calc(10vh + ${index * 30}px)`;
 
     return (
-        <section id="projects" className="py-20 relative overflow-hidden bg-background">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                {/* Section Header */}
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-6xl font-heading font-bold mb-4 text-pencil transform rotate-1 inline-block relative">
-                        Featured Projects
-                        <svg className="absolute -bottom-4 left-0 w-full h-4" viewBox="0 0 100 20" preserveAspectRatio="none">
-                            <path d="M0,15 Q50,5 100,15 M10,10 Q50,20 90,10" stroke="#e85d04" strokeWidth="3" fill="none" className="path-draw" />
-                        </svg>
-                    </h2>
-                    <p className="mt-8 text-pencil/80 font-sans text-xl font-bold transform -rotate-1">
-                        📂 Tap a folder to open its workspace, then run script commands in the terminal!
-                    </p>
+        <div ref={container} className="h-[120vh] flex items-start justify-center sticky top-0 pb-[10vh]">
+            <motion.div
+                style={{ 
+                    scale,
+                    opacity,
+                    rotateX,
+                    filter,
+                    top: topOffset,
+                    transformOrigin: "top center",
+                }}
+                className="relative w-full flex flex-col gap-6 p-8 lg:p-12 bg-[#0a0a0a] border border-white/[0.06] shadow-[0_0_80px_rgba(255,255,255,0.02)] will-change-transform sticky"
+            >
+                {/* Header Row */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-baseline border-b border-white/[0.06] pb-6">
+                    <div className="md:col-span-2">
+                        <span className="text-xl font-heading text-white/40">
+                            {project.id}
+                        </span>
+                    </div>
+                    <div className="md:col-span-6">
+                        <h3 className="text-2xl md:text-3xl font-heading font-medium tracking-tight text-white uppercase">
+                            / {project.title}
+                        </h3>
+                    </div>
+                    <div className="md:col-span-4 lg:text-right">
+                        <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase text-white/30">
+                            [ {project.role} ]
+                        </span>
+                    </div>
                 </div>
 
-                {/* Desk Planner Layout */}
-                <div className="relative py-8 px-4 md:px-8 bg-[#f5ebe0]/40 border-4 border-pencil border-wobbly rounded-2xl shadow-hard-lg">
+                {/* Body Row */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mt-2">
                     
-                    {/* Top folder tabs */}
-                    <div className="flex overflow-x-auto gap-2 pb-4 scrollbar-thin max-w-full select-none justify-start border-b-2 border-dashed border-pencil/20">
-                        {projects.map((project, idx) => {
-                            const isActive = idx === activeIndex;
-                            return (
-                                <button
-                                    key={idx}
-                                    onClick={() => setActiveIndex(idx)}
-                                    className={`px-4 py-2.5 border-2 ${isActive ? `${project.bg} ${project.border} ${project.text} translate-y-0.5 shadow-none` : 'bg-white border-pencil text-pencil/50 hover:text-pencil shadow-hard-sm'} border-wobbly-sm font-display font-extrabold text-base md:text-lg cursor-pointer whitespace-nowrap transition-all flex items-center gap-1.5`}
-                                >
-                                    <span>📁 {project.title}</span>
-                                </button>
-                            );
-                        })}
+                    {/* Left: Tagline & Problem */}
+                    <div className="lg:col-span-5 flex flex-col gap-8">
+                        <p className="text-xl font-sans text-white font-medium leading-relaxed">
+                            {project.tagline}
+                        </p>
+                        <div>
+                            <span className="block text-[10px] font-mono font-bold tracking-[0.2em] uppercase text-white/30 mb-2">
+                                // PROBLEM
+                            </span>
+                            <p className="text-white/50 leading-relaxed text-sm">
+                                {project.problem}
+                            </p>
+                        </div>
                     </div>
 
-                    {/* Doodle IDE Window */}
-                    <div className="bg-white border-4 border-pencil border-wobbly rounded-xl p-4 md:p-6 shadow-hard-lg mt-8 relative min-h-[460px]">
-                        
-                        {/* IDE Header Bar */}
-                        <div className="flex items-center justify-between border-b-2 border-pencil pb-3 mb-6">
-                            <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-accent border-2 border-pencil" />
-                                <div className="w-3.5 h-3.5 rounded-full bg-amber-400 border-2 border-pencil" />
-                                <div className="w-3 h-3 rounded-full bg-green-500 border-2 border-pencil" />
-                                <span className="ml-2 font-mono text-xs text-pencil/40 font-bold hidden sm:inline">doodle-ide v1.0.0</span>
-                            </div>
-                            <div className="font-mono text-xs text-pencil/50 font-bold bg-muted/30 border border-pencil border-dashed px-2.5 py-0.5 rounded">
-                                ~/projects/{currentProject.title.toLowerCase()}
-                            </div>
+                    {/* Right: Approach & Outcome */}
+                    <div className="lg:col-span-7 flex flex-col gap-8">
+                        <div>
+                            <span className="block text-[10px] font-mono font-bold tracking-[0.2em] uppercase text-white/30 mb-2">
+                                // APPROACH
+                            </span>
+                            <p className="text-white/50 leading-relaxed text-sm">
+                                {project.approach}
+                            </p>
                         </div>
-
-                        {/* IDE Workspace Area */}
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-                            
-                            {/* File Tree Directory (Left) */}
-                            <div className="hidden md:flex md:col-span-3 border-r-2 border-dashed border-pencil/20 pr-6 flex-col gap-4">
-                                <div>
-                                    <span className="text-[10px] uppercase font-sans font-black text-pencil/30 block mb-2 tracking-wider">Workspace Tree</span>
-                                    <div className="space-y-2.5 font-mono text-sm font-bold text-pencil">
-                                        <div className="pl-2 border-l border-pencil/30">
-                                            <div className="text-pencil/50 select-none">📁 src</div>
-                                            <button 
-                                                onClick={() => setActiveTab('code')}
-                                                className={`pl-4 flex items-center gap-1.5 w-full text-left py-0.5 rounded cursor-pointer ${activeTab === 'code' ? 'text-accent bg-accent/5' : 'hover:bg-muted/20'}`}
-                                            >
-                                                <FileCode size={14} />
-                                                <span>{currentProject.codeFile}</span>
-                                            </button>
-                                        </div>
-                                        <div className="pl-2 border-l border-pencil/30">
-                                            <div className="text-pencil/50 select-none">📁 config</div>
-                                            <button 
-                                                onClick={() => setActiveTab('json')}
-                                                className={`pl-4 flex items-center gap-1.5 w-full text-left py-0.5 rounded cursor-pointer ${activeTab === 'json' ? 'text-secondary bg-secondary/5' : 'hover:bg-muted/20'}`}
-                                            >
-                                                <Cpu size={14} />
-                                                <span>tech_stack.json</span>
-                                            </button>
-                                        </div>
-                                        <div className="pl-2 border-l border-pencil/30">
-                                            <button 
-                                                onClick={() => setActiveTab('terminal')}
-                                                className={`flex items-center gap-1.5 w-full text-left py-0.5 rounded cursor-pointer ${activeTab === 'terminal' ? 'text-[#166534] bg-green-500/5' : 'hover:bg-muted/20'}`}
-                                            >
-                                                <TerminalIcon size={14} />
-                                                <span>run.sh</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Mini Polaroid spec card */}
-                                <div className="hidden md:block border-2 border-pencil border-wobbly p-2.5 bg-paper rounded shadow-hard-sm rotate-2 max-w-[180px] mx-auto mt-4">
-                                    <div className="relative h-24 border border-pencil overflow-hidden">
-                                        <Image
-                                            src={currentProject.image}
-                                            alt={currentProject.title}
-                                            fill
-                                            sizes="150px"
-                                            className="object-cover"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Code Canvas Area (Right) */}
-                            <div className="col-span-12 md:col-span-9 flex flex-col justify-between min-h-[360px]">
-                                
-                                <div className="flex-1">
-                                    {/* Workspace Tabs Header */}
-                                    <div className="flex gap-2 border-b border-pencil/20 pb-2 mb-4">
-                                        <button 
-                                            onClick={() => setActiveTab('code')}
-                                            className={`px-3 py-1 font-mono text-xs font-bold border border-pencil rounded cursor-pointer transition-colors ${activeTab === 'code' ? `${currentProject.bg} ${currentProject.border} ${currentProject.text}` : 'bg-white text-pencil/60 border-transparent hover:text-pencil'}`}
-                                        >
-                                            {currentProject.codeFile}
-                                        </button>
-                                        <button 
-                                            onClick={() => setActiveTab('json')}
-                                            className={`px-3 py-1 font-mono text-xs font-bold border border-pencil rounded cursor-pointer transition-colors ${activeTab === 'json' ? `${currentProject.bg} ${currentProject.border} ${currentProject.text}` : 'bg-white text-pencil/60 border-transparent hover:text-pencil'}`}
-                                        >
-                                            tech_stack.json
-                                        </button>
-                                        <button 
-                                            onClick={() => setActiveTab('terminal')}
-                                            className={`px-3 py-1 font-mono text-xs font-bold border border-pencil rounded cursor-pointer transition-colors ${activeTab === 'terminal' ? `${currentProject.bg} ${currentProject.border} ${currentProject.text}` : 'bg-white text-pencil/60 border-transparent hover:text-pencil'}`}
-                                        >
-                                            run.sh
-                                        </button>
-                                    </div>
-
-                                    {/* Tabs content render */}
-                                    <div className="bg-[#FAF9F6] border-2 border-pencil border-wobbly p-4 rounded min-h-[260px] overflow-x-auto relative">
-                                        
-                                        <AnimatePresence mode="wait">
-                                            {activeTab === 'code' && (
-                                                <motion.div
-                                                    key="code-tab"
-                                                    initial={{ opacity: 0, y: 5 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: -5 }}
-                                                    className="space-y-1"
-                                                >
-                                                    {highlightCode(currentProject.code)}
-                                                </motion.div>
-                                            )}
-
-                                            {activeTab === 'json' && (
-                                                <motion.div
-                                                    key="json-tab"
-                                                    initial={{ opacity: 0, y: 5 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: -5 }}
-                                                    className="space-y-1"
-                                                >
-                                                    {highlightCode(currentProject.techJson)}
-                                                </motion.div>
-                                            )}
-
-                                            {activeTab === 'terminal' && (
-                                                <motion.div
-                                                    key="terminal-tab"
-                                                    initial={{ opacity: 0, y: 5 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: -5 }}
-                                                    className="flex flex-col h-full font-mono text-sm text-green-400 bg-[#1e1e1e] p-4 rounded-md min-h-[220px] shadow-inner"
-                                                >
-                                                    {/* Console outputs */}
-                                                    <div className="flex-1 space-y-1.5 overflow-y-auto mb-4 min-h-[140px]">
-                                                        {terminalLines.map((line, idx) => (
-                                                            <div key={idx} className="leading-relaxed">
-                                                                {line && line.startsWith("soumya@") ? (
-                                                                    <span className="text-blue-400">{line}</span>
-                                                                ) : line && line.startsWith("[ALERT]") ? (
-                                                                    <span className="text-red-400">{line}</span>
-                                                                ) : line && line.startsWith("[SUCCESS]") ? (
-                                                                    <span className="text-yellow-400 font-bold">{line}</span>
-                                                                ) : (
-                                                                    <span>{line}</span>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                        
-                                                        {/* Cursor blinking */}
-                                                        {!isTerminalRunning && terminalLines.length === 0 && (
-                                                            <div className="text-pencil/30 italic text-xs mb-2 select-none">
-                                                                Execute the script below to build and deploy...
-                                                            </div>
-                                                        )}
-                                                        {isTerminalRunning && (
-                                                            <span className="inline-block w-2.5 h-4 bg-green-400 animate-[pulse_1s_infinite] ml-1 align-middle" />
-                                                        )}
-                                                    </div>
-
-                                                    {/* Control action */}
-                                                    <button
-                                                        onClick={runTerminal}
-                                                        disabled={isTerminalRunning}
-                                                        className={`self-start inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-sans font-extrabold text-sm border-2 border-pencil shadow-[3px_3px_0px_0px_#2d2d2d] active:shadow-none active:translate-x-[3px] active:translate-y-[3px] transition-all cursor-pointer ${isTerminalRunning ? 'opacity-50 pointer-events-none filter grayscale' : ''}`}
-                                                    >
-                                                        <Play size={14} fill="currentColor" />
-                                                        <span>Run Script</span>
-                                                    </button>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-
-                                    </div>
-                                </div>
-
-                                {/* Info Description & Action Buttons */}
-                                <div className="mt-6 pt-4 border-t border-dashed border-pencil/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                    <div className="max-w-xl">
-                                        <p className="text-pencil font-sans text-base leading-snug">
-                                            <span className="font-bold text-accent">Summary:</span> {currentProject.desc}
-                                        </p>
-                                    </div>
-                                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                                        <a 
-                                            href={currentProject.github}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex-1 sm:flex-initial px-4 py-2.5 bg-white hover:bg-pencil text-pencil hover:text-paper border-2 border-pencil border-wobbly flex items-center justify-center gap-2 font-sans font-bold text-sm shadow-hard-sm active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all cursor-pointer"
-                                        >
-                                            <Github size={16} strokeWidth={2.5} />
-                                            <span>Repository</span>
-                                        </a>
-                                        {currentProject.live !== "#" && (
-                                            <a 
-                                                href={currentProject.live}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex-1 sm:flex-initial px-4 py-2.5 bg-accent hover:bg-pencil text-paper hover:text-paper border-2 border-pencil border-wobbly flex items-center justify-center gap-2 font-sans font-bold text-sm shadow-hard-sm active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all cursor-pointer"
-                                            >
-                                                <ExternalLink size={16} strokeWidth={2.5} />
-                                                <span>Live Demo</span>
-                                            </a>
-                                        )}
-                                    </div>
-                                </div>
-
-                            </div>
+                        <div className="p-4 bg-white/[0.03] border border-white/[0.06]">
+                            <span className="block text-[10px] font-mono font-bold tracking-[0.2em] uppercase text-white/30 mb-2">
+                                // OUTCOME
+                            </span>
+                            <p className="text-white font-medium text-sm">
+                                {project.outcome}
+                            </p>
                         </div>
-
                     </div>
+
+                </div>
+
+                {/* Footer Row */}
+                <div className="flex flex-wrap items-center justify-between gap-4 pt-6 mt-auto border-t border-white/[0.06]">
+                    <div className="flex gap-2">
+                        {project.tags.map(tag => (
+                            <span key={tag} className="px-2 py-1 bg-white/[0.03] border border-white/[0.06] text-[10px] font-mono tracking-widest uppercase text-white/30">
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                        {project.live !== "#" && (
+                            <a href={project.live} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-white/60 hover:text-white interactive-button group/link transition-colors">
+                                View Case Study
+                                <ArrowRight size={14} className="group-hover/link:translate-x-1 transition-transform" />
+                            </a>
+                        )}
+                        {project.github !== "#" && (
+                            <a href={project.github} target="_blank" rel="noopener noreferrer" className="text-white/30 hover:text-white/60 transition-colors interactive-button">
+                                <Github size={18} />
+                            </a>
+                        )}
+                    </div>
+                </div>
+
+            </motion.div>
+        </div>
+    );
+};
+
+const Projects = () => {
+    return (
+        <section id="projects" className="py-24 bg-black relative z-10 border-b border-white/[0.06]">
+            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
+                    
+                    {/* Left: Category Label */}
+                    <div className="lg:col-span-3 flex flex-col pt-2 relative">
+                        <div className="sticky top-[10vh] flex items-center gap-3 z-20">
+                            <div className="w-2 h-2 rounded-full bg-white" />
+                            <span className="text-[10px] font-mono font-bold tracking-[0.3em] uppercase text-white/40">
+                                PROJECTS
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Right: Project Cards Stack */}
+                    <div className="lg:col-span-9 relative" style={{ perspective: "1500px" }}>
+                        <div className="relative mt-[-10vh]">
+                            {projects.map((project, index) => (
+                                <ProjectCard 
+                                    key={project.id} 
+                                    project={project} 
+                                    index={index} 
+                                />
+                            ))}
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
